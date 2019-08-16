@@ -7,42 +7,92 @@ import DateUtils from '@/utils/DateUtils.js'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-    state: {
-        currentWeek: -1,
-        deadlines: [],
-        seasonData: []
-    },
-    getters: {
-        currentWeek: (state) => {
-            return state.currentWeek < 1 ? DateUtils.getCurrentWeek(state.deadlines) : state.currentWeek
-        },
-        matchups: (state) => (week) => {
-            return state.seasonData.filter(function (matchup) {
-                return matchup.week === week
-            });
-        },
-    },
-    mutations: {
-        SET_SEASON_DATA: (state, seasonData) => {
-            state.seasonData = seasonData
-        },
-        SET_DEADLINES: (state, deadlines) => {
-            state.deadlines = deadlines
-        },
-        SET_CURRENT_WEEK: (state, currentWeek) => {
-            state.currentWeek = currentWeek
+  state: {
+    gameData: [],
+    currentWeek: 1,
+    currentSeason: 2019,
+    matchups: [],
+  },
+  getters: {
+    currentSpreadStatus: (state) => {
+      const matchups = state.matchups
+      let spreadsSet = true
+      for (let index = 0; index < matchups.length; index++) {
+        const matchup = matchups[index]
+        if (!matchup.hasOwnProperty('spread') || !matchup.spread) {
+          spreadsSet = false
+          break
         }
+      }
+      return spreadsSet
     },
-    actions: {
-        setCurrentWeek({commit}, week) {
-            commit('SET_CURRENT_WEEK', week)
-        },
-        async loadSeasonData({commit}, params) {
-            const seasonData = await GuruService.getSeasonData(params.season)
-            commit('SET_SEASON_DATA', seasonData)
-            let deadlines = DateUtils.getDeadlines(seasonData)
-            commit('SET_DEADLINES', deadlines)
-            commit('SET_CURRENT_WEEK', DateUtils.getCurrentWeek(deadlines))
+    currentPredictionStatus: (state) => {
+      const matchups = state.matchups
+      let predictionsSet = true
+      for (let index = 0; index < matchups.length; index++) {
+        const matchup = matchups[index]
+        if (
+          !matchup.hasOwnProperty('phs') ||
+          !matchup.phs ||
+          !matchup.hasOwnProperty('pvs') ||
+          !matchup.pvs
+        ) {
+          predictionsSet = false
+          break
         }
-    }
+      }
+      return predictionsSet
+    },
+  },
+  mutations: {
+    SET_GAME_DATA: (state, gameData) => {
+      state.gameData = gameData
+    },
+    UPDATE_SPREAD: (state, game) => {
+      for (let index = 0; index < state.gameData.length; index++) {
+        let g = state.gameData[index]
+        if (g.id === game.id) {
+          g.spread = game.spread
+        }
+      }
+    },
+  },
+  actions: {
+    async loadGameData({ commit, state }) {
+      const gameData = await GuruService.getGameData()
+
+      const week = gameData.reduce((min, g) => {
+        return g.week < min ? g.week : min;
+      });
+
+      state.currentWeek = week
+
+      let now = new Date()
+      let month = now.getMonth()
+      let season = now.getFullYear()
+      if (month < 2) {
+        season -= season
+      }
+      state.currentSeason = season
+
+      const matchups = gameData.filter(val => {
+        return (val.gd == 0 && val.season == season && val.week == week);
+      });
+
+      state.matchups = matchups
+      commit('SET_GAME_DATA', gameData)
+    },
+    async setSpread({ commit }, params) {
+      JSON.stringify(params)
+      if (
+        params.hasOwnProperty('id') &&
+        params.id != null &&
+        params.hasOwnProperty('spread') &&
+        params.spread != null
+      ) {
+        const game = await GuruService.updateSpread(params.id, params.spread, params.phs, params.pvs)
+        commit('UPDATE_SPREAD', game)
+      }
+    },
+  },
 })

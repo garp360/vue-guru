@@ -7,7 +7,7 @@
       <slot name="nav"></slot>
     </div>
     <div class="hb-main">
-      <router-view/>
+      <router-view />
     </div>
     <div class="hb-layout-footer">
       <slot name="footer"></slot>
@@ -16,7 +16,6 @@
 </template>
 
 <style lang="scss" scoped>
-
 html,
 body {
   overflow: hidden;
@@ -102,17 +101,15 @@ body {
 
 .hb-dashboard > .hb-layout-navigation {
   border-right: 1px solid #111;
-//   background-color: #222;
   background-color: rgba(32, 32, 39, 0.664);
 }
 
 .hb-dashboard > .hb-layout-footer {
   text-align: center;
-  font-size: .9em;
+  font-size: 0.9em;
   border-top: 1px solid #333;
   background-color: #111;
-  color: #242424;
-  color:rgb(37, 85, 216);
+  color: rgb(37, 85, 216);
   text-align: right;
   padding: 6px 10px;
 }

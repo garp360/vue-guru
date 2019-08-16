@@ -27,56 +27,56 @@
 </template>
 
 <script>
-import moment from "moment";
+import moment from 'moment'
 
 export default {
   props: {
     date: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
-      target: moment(this.date, "YYYY-MM-DD hh:mm:ss"),
-      now: moment()
-    };
+      target: moment(this.date, 'YYYY-MM-DD hh:mm:ss'),
+      now: moment(),
+    }
   },
   computed: {
     countdown() {
       // return moment().to(this.target).duration.as()
-      return this.target.fromNow();
+      return this.target.fromNow()
     },
     seconds() {
-      return this.target.diff(this.now, "seconds") % 60;
+      return this.target.diff(this.now, 'seconds') % 60
     },
 
     minutes() {
-      return this.target.diff(this.now, "minutes") % 60;
+      return this.target.diff(this.now, 'minutes') % 60
     },
 
     hours() {
-      return this.target.diff(this.now, "hours") % 24;
+      return this.target.diff(this.now, 'hours') % 24
     },
 
     days() {
-      return this.target.diff(this.now, "days");
-    }
+      return this.target.diff(this.now, 'days')
+    },
   },
   created() {
     window.setInterval(() => {
-      this.now = moment();
-    }, 1000);
+      this.now = moment()
+    }, 1000)
   },
   filters: {
     two_digits: function(value) {
       if (value.toString().length <= 1) {
-        return "0" + value.toString();
+        return '0' + value.toString()
       }
-      return value.toString();
-    }
-  }
-};
+      return value.toString()
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>
@@ -86,20 +86,20 @@ export default {
   margin-bottom: 5px;
 }
 .text {
-//   color: #dbdf1e;
+  //   color: #dbdf1e;
   color: #9499a1;
   font-size: 0.8em;
-  font-family: "Roboto Condensed", serif;
+  font-family: 'Roboto Condensed', serif;
   font-weight: 40;
   text-align: center;
 }
 
 .digit {
-//   color: #ecf0f1;
-  color:rgb(37, 85, 216);
+  //   color: #ecf0f1;
+  color: rgb(37, 85, 216);
   font-size: 0.9em;
   font-weight: 500;
-  font-family: "Roboto", serif;
+  font-family: 'Roboto', serif;
   text-align: center;
 }
 
@@ -124,11 +124,11 @@ export default {
 }
 .deadline-outline,
 .countdown-outline {
-    //  border: 1px solid rgb(49, 73, 54);
+  //  border: 1px solid rgb(49, 73, 54);
   //   background-color: #000;
-//   background-color: rgb(62, 87, 67);
-//   background-color: rgba(56, 56, 56, 0.596);
-//   opacity: 0.6;
+  //   background-color: rgb(62, 87, 67);
+  //   background-color: rgba(56, 56, 56, 0.596);
+  //   opacity: 0.6;
   padding: 5px 0px;
 }
 .deadline-outline {
@@ -142,5 +142,3 @@ export default {
   border-bottom-right-radius: 6px;
 }
 </style>
-
-
