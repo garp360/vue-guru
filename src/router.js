@@ -20,14 +20,17 @@ export default new Router({
                     component: () => import('./matchups/Matchups.vue'),
                 },
                 {
+                    name: 'matchups',
                     path: 'matchups',
                     component: () => import('./matchups/Matchups.vue'),
                 },
                 {
+                    name: 'settings',
                     path: 'settings',
                     component: () => import('./settings/Settings.vue'),
                 },
                 {
+                    name: 'predictions',
                     path: 'predictions',
                     component: () => import('./predictions/Predictions.vue'),
                 }

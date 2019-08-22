@@ -1,91 +1,101 @@
 <template>
   <div class="predictions">
     <div class="title">
-      <span>Predictions - Week{{currentWeek}}</span>
+      <span @click="getOffensiveStats()">Predictions - Week{{ currentWeek }}</span>
     </div>
-    <div
-      v-bind:class="{ isFocused: isFocused(matchup) }"
-      class="divTableRow"
-      v-for="matchup in matchups"
-      v-bind:key="matchup.eid"
-      @click="focus(matchup, 'spread-' + matchup.id)"
-    >
-      {{matchup.v}}
-      <font>@</font>
-      {{matchup.h}}
-      [{{matchup.spread}}]
+    <div class="divTable">
+      <div class="divTableHeading">
+        <div class="divTableRow">
+          <div class="divTableHead hb-cell-center">Week</div>
+          <div class="divTableHead">Game Day</div>
+          <div class="divTableHead">Day</div>
+          <div class="divTableHead">Time</div>
+          <div class="divTableHead">Visitor</div>
+          <div class="divTableHead">Home</div>
+          <div class="divTableHead hb-cell-center">Head 2 Head</div>
+          <div class="divTableHead">Spread</div>
+          <div class="divTableHead">P-Spread</div>
+          <div class="divTableHead">Strength</div>
+        </div>
+      </div>
+      <div class="divTableBody">
+        <div
+          class="divTableRow"
+          v-for="matchup in matchups"
+          v-bind:key="matchup.eid"
+        >
+          <div class="divTableCell hb-cell-center">{{ matchup.week }}</div>
+          <div class="divTableCell">{{ gametime(matchup) }}</div>
+          <div class="divTableCell">{{ matchup.d.toUpperCase() }}</div>
+          <div class="divTableCell">{{ matchup.t }}</div>
+          <div class="divTableCell">{{ matchup.v }}</div>
+          <div class="divTableCell">{{ matchup.h }}</div>
+          <div class="divTableCell hb-cell-center">
+            {{ matchup.v }} [{{ matchup.pvs }}]
+            <font>@</font>
+            {{ matchup.h }} [{{ matchup.phs }}]
+          </div>
+          <div class="divTableCell">{{matchup.spread}}</div>
+          <div class="divTableCell">{{calcPSpread(matchup)}}</div>
+          <div class="divTableCell">{{calcPSpread(matchup) - matchup.spread}}</div>
+        </div>
+      </div>
     </div>
+    <font style="color:#eeeeee;">{{ target }}</font>
   </div>
 </template>
 
-
 <script>
-import moment from "moment";
-import GuruService from "@/services/GuruService.js";
-import hbToggle from "@/components/hbToggle.vue";
+import { mapState, mapGetters } from 'vuex'
+import moment from 'moment'
+import GuruService from '@/services/GuruService.js'
+import StatService from '@/services/StatService.js'
+
 
 export default {
-  components: {
-    hbToggle
-  },
   data: function() {
     return {
-      currentWeek: 0,
-      currentSeason: new Date().getFullYear(),
       focused: {},
-      target: "",
-      matchups: []
-    };
+      target: '',
+    }
   },
   methods: {
     gametime: function(game) {
       let gametime =
         game.eid.substring(0, game.eid.length - 2) +
-        " " +
-        game.t.padStart(5, "0") +
-        " PM";
-      return moment(gametime, "YYYYMMDD hh:mm a")
-        .format("MMM DD, YYYY")
-        .toUpperCase();
+        ' ' +
+        game.t.padStart(5, '0') +
+        ' PM'
+      return moment(gametime, 'YYYYMMDD hh:mm a')
+        .format('MMM DD, YYYY')
+        .toUpperCase()
     },
-    focus(matchup, target) {
-      if (target != null && target.trim().length > 0) {
-        this.focused = matchup;
-        this.$refs[target][0].focus();
-      }
-
-      if (matchup != null) {
-        this.focused = matchup;
-      } else {
-        this.focused = null;
-      }
+    calcPSpread: function(matchup) {
+        let favorite = matchup.phs > matchup.pvs ? 1 : matchup.phs < matchup.pvs ? -1 : 0
+        return matchup.pvs - matchup.phs
     },
-    isFocused: function(matchup) {
-      return this.focused != null && this.focused.eid === matchup.eid;
-    },
-    update: async function(matchup) {
-      console.log("=====MATCHUP - update:" + JSON.stringify(matchup));
-      await GuruService.updatepredictions(matchup);
+    getOffensiveStats: async function() {
+        StatService.getOffensiveStatsBySeason(2018)
     }
   },
-  mounted() {
-    let currentWeek = this.$store.getters.currentWeek;
-    this.currentWeek = currentWeek;
-    this.matchups = this.$store.getters.matchups(currentWeek);
-
-    this.$store.subscribe(mutation => {
-      switch (mutation.type) {
-        case "SET_MATCHUPS":
-          this.matchups = this.$store.state.matchups;
-          break;
-      }
-    });
+  computed: {
+    ...mapState([
+      'currentWeek',
+      'currentSeason',
+      'matchups'
+    ]),
+    ...mapGetters([
+      'currentSpreadStatus',
+      'currentPredictionStatus',
+    ]),
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/custom.scss';
 @import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:400|Roboto:500);
+
 
 .predictions {
   padding: 20px;
@@ -100,7 +110,7 @@ export default {
   color: #4f9761;
   font-weight: 500;
   font-size: 1.1em;
-  font-family: "Roboto", serif;
+  font-family: 'Roboto', serif;
 }
 .predictions .title {
   display: flex;
@@ -110,7 +120,7 @@ export default {
   color: #5e83c4;
   font-weight: 500;
   font-size: 2em;
-  font-family: "Roboto", serif;
+  font-family: 'Roboto', serif;
   margin-bottom: 5px;
 }
 .predictions .divTableHeading .divTableHead {

@@ -1,9 +1,12 @@
 <template>
   <div class="matchups">
     <div class="title">
-      <span>Matchups - Week{{currentWeek}}</span>
+      <span>Matchups - Week {{ currentWeek }}</span>
       <span>
-        <hbToggle />
+        <a class="button button-green" :disabled="!currentSpreadStatus" @click="setPredictions()">
+          <i class="fa fa-globe"></i>
+          <strong>Initialize Predictions</strong>
+        </a>
       </span>
     </div>
     <div class="divTable">
@@ -27,16 +30,16 @@
           v-bind:key="matchup.eid"
           @click="focus(matchup, 'spread-' + matchup.id)"
         >
-          <div class="divTableCell hb-cell-center">{{matchup.week}}</div>
-          <div class="divTableCell">{{gametime(matchup)}}</div>
-          <div class="divTableCell">{{matchup.d.toUpperCase()}}</div>
-          <div class="divTableCell">{{matchup.t}}</div>
-          <div class="divTableCell">{{matchup.v}}</div>
-          <div class="divTableCell">{{matchup.h}}</div>
+          <div class="divTableCell hb-cell-center">{{ matchup.week }}</div>
+          <div class="divTableCell">{{ gametime(matchup) }}</div>
+          <div class="divTableCell">{{ matchup.d.toUpperCase() }}</div>
+          <div class="divTableCell">{{ matchup.t }}</div>
+          <div class="divTableCell">{{ matchup.v }}</div>
+          <div class="divTableCell">{{ matchup.h }}</div>
           <div class="divTableCell hb-cell-center">
-            {{matchup.v}}
+            {{ matchup.v }}
             <font>@</font>
-            {{matchup.h}}
+            {{ matchup.h }}
           </div>
           <div class="divTableCell">
             <input
@@ -53,81 +56,81 @@
         </div>
       </div>
     </div>
-    <font style="color:#eeeeee;">{{target}}</font>
+    <font style="color:#eeeeee;">{{ target }}</font>
   </div>
 </template>
 
 <script>
-import moment from "moment";
-import GuruService from "@/services/GuruService.js";
-import hbToggle from "@/components/hbToggle.vue";
+import { mapState, mapGetters } from 'vuex'
+import moment from 'moment'
+import GuruService from '@/services/GuruService.js'
+import SimplePredictor from '@/utils/SimplePredictor'
 
 export default {
-  components: {
-    hbToggle
-  },
   data: function() {
     return {
-      currentWeek: 0,
-      currentSeason: new Date().getFullYear(),
       focused: {},
-      target: "",
-      matchups: []
-    };
+      target: '',
+    }
   },
   methods: {
     gametime: function(game) {
       let gametime =
         game.eid.substring(0, game.eid.length - 2) +
-        " " +
-        game.t.padStart(5, "0") +
-        " PM";
-      return moment(gametime, "YYYYMMDD hh:mm a")
-        .format("MMM DD, YYYY")
-        .toUpperCase();
+        ' ' +
+        game.t.padStart(5, '0') +
+        ' PM'
+      return moment(gametime, 'YYYYMMDD hh:mm a')
+        .format('MMM DD, YYYY')
+        .toUpperCase()
     },
     focus(matchup, target) {
       if (target != null && target.trim().length > 0) {
-        this.focused = matchup;
-        this.$refs[target][0].focus();
+        this.focused = matchup
+        this.$refs[target][0].focus()
       }
 
       if (matchup != null) {
-        this.focused = matchup;
+        this.focused = matchup
       } else {
-        this.focused = null;
+        this.focused = null
       }
     },
     isFocused: function(matchup) {
-      return this.focused != null && this.focused.eid === matchup.eid;
+      return this.focused != null && this.focused.eid === matchup.eid
     },
     update: async function(matchup) {
-      console.log("=====MATCHUP - update:" + JSON.stringify(matchup));
-      await GuruService.updateMatchups(matchup);
-    }
+      let prediction = SimplePredictor.getPrediction(matchup)  
+      await this.$store.dispatch('setSpread', {
+        id: matchup.id,
+        spread: matchup.spread,
+        pvs: prediction.pvs,
+        phs: prediction.phs
+      })
+    },
+    setPredictions() {
+      this.$router.push({ name: 'predictions' })
+    },
   },
-  mounted() {
-    let currentWeek = this.$store.getters.currentWeek;
-    this.currentWeek = currentWeek;
-    this.matchups = this.$store.getters.matchups(currentWeek);
-
-    this.$store.subscribe(mutation => {
-      switch (mutation.type) {
-        case "SET_MATCHUPS":
-          this.matchups = this.$store.state.matchups;
-          break;
-      }
-    });
-  }
-};
+  computed: {
+    ...mapState([
+      'currentWeek',
+      'currentSeason',
+      'matchups'
+    ]),
+    ...mapGetters([
+      'currentSpreadStatus'
+    ]),
+  },
+}
 </script>
 
-
 <style lang="scss" scoped>
+@import '@/assets/custom.scss';
 @import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:400|Roboto:500);
 
 .matchups {
-    padding: 20px;
+  padding: 20px;
 }
 
 .matchups .divTable,
@@ -139,7 +142,7 @@ export default {
   color: #4f9761;
   font-weight: 500;
   font-size: 1.1em;
-  font-family: "Roboto", serif;
+  font-family: 'Roboto', serif;
 }
 .matchups .title {
   display: flex;
@@ -149,8 +152,9 @@ export default {
   color: #5e83c4;
   font-weight: 500;
   font-size: 2em;
-  font-family: "Roboto", serif;
+  font-family: 'Roboto', serif;
   margin-bottom: 5px;
+  padding-bottom: 5px;
 }
 .matchups .divTableHeading .divTableHead {
   color: #5e83c4;

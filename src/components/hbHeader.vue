@@ -2,10 +2,12 @@
   <div class="hb-header">
     <div class="hb-header-title">
       <slot name="title">
-        <span class>{{title}}</span>
+        <span class>{{ title }}</span>
       </slot>
     </div>
-    <div><slot name="bar"></slot></div>
+    <div>
+      <slot name="bar"></slot>
+    </div>
     <div class="hb-header-deadline">
       <slot name="deadline"></slot>
     </div>
@@ -16,13 +18,13 @@
 export default {
   props: {
     title: {
-      type: String
-    }
+      type: String,
+    },
   },
   data: function() {
-    return {};
-  }
-};
+    return {}
+  },
+}
 </script>
 
 <style lang="scss" scoped>
@@ -35,8 +37,8 @@ export default {
   align-items: center;
 }
 .hb-header-title {
-    color:rgb(37, 85, 216);
-    font-family: "Roboto Condensed", serif;
+  color: rgb(37, 85, 216);
+  font-family: 'Roboto Condensed', serif;
   padding: 5px 10px;
   order: 0;
 }
@@ -58,4 +60,3 @@ export default {
   order: 0;
 }
 </style>
-
